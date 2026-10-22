@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolverStudio ⚡ | Advanced AI Multi-Modal Problem-Solving Platform</title>
+  <meta name="description" content="Deconstruct complex coding bugs, math/logic dilemmas, business bottlenecks, and architectural puzzles with structured AI resolution plans, code scaffolds, and interactive simulations.">
+  <meta name="keywords" content="AI problem solver, code debugger, logic puzzle solver, business strategy framework, algorithmic resolution">
+
+  <!-- OpenSearch Specification for Chrome Omnibox Search -->
+  <link rel="search" type="application/opensearchdescription+xml" title="SolverStudio" href="/opensearch.xml">
+
+  <!-- Google SearchAction JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "SolverStudio",
+    "url": "http://localhost:5000/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "http://localhost:5000/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Highlight.js CSS for Code Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              950: '#060911',
+              900: '#090D16',
+              850: '#0D1424',
+              800: '#131B2E',
+              700: '#1E293B',
+              600: '#334155',
+            },
+            violet: {
+              glow: '#8B5CF6',
+              accent: '#A855F7',
+              dark: '#581C87'
+            },
+            emerald: {
+              glow: '#10B981',
+              accent: '#34D399',
+              dark: '#064E3B'
+            },
+            cyan: {
+              glow: '#06B6D4',
+              accent: '#22D3EE'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'glow-violet': '0 0 25px -5px rgba(139, 92, 246, 0.4)',
+            'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.4)',
+            'glow-cyan': '0 0 25px -5px rgba(6, 182, 212, 0.4)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-cyber-900 text-slate-100 min-h-screen selection:bg-violet-glow selection:text-white antialiased overflow-x-hidden relative font-sans">
+
+  <!-- Background Animated Mesh Gradient & Grid -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-violet-600/15 rounded-full blur-[128px] animate-pulse-slow"></div>
+    <div class="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-600/10 rounded-full blur-[140px] animate-pulse-slower"></div>
+    <div class="absolute -bottom-40 left-1/4 w-[32rem] h-[32rem] bg-emerald-600/10 rounded-full blur-[130px] animate-pulse-slow"></div>
+    <div class="absolute inset-0 bg-cyber-grid bg-[size:40px_40px] opacity-[0.035]"></div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Command Palette Modal (Ctrl+K) -->
+  <div id="command-modal" class="fixed inset-0 bg-cyber-950/80 backdrop-blur-md z-50 hidden flex items-start justify-center pt-24 px-4 transition-all duration-300">
+    <div class="bg-cyber-850 border border-slate-700/60 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-all" id="command-modal-card">
+      <div class="p-4 border-b border-slate-800 flex items-center gap-3">
+        <i class="fa-solid fa-terminal text-violet-glow text-lg"></i>
+        <input type="text" id="command-input" placeholder="Type a command, search templates, or jump to category (e.g. 'debug async', 'business strategy')..." class="bg-transparent text-white placeholder-slate-500 w-full focus:outline-none text-sm md:text-base font-mono">
+        <span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded font-mono">ESC</span>
+      </div>
+      <div id="command-results" class="max-h-80 overflow-y-auto p-2 space-y-1">
+        <!-- Dynamic command search items inserted via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-cyber-950/70 border-b border-slate-800/80 transition-all duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <a href="#hero" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-emerald-500 flex items-center justify-center shadow-glow-violet group-hover:scale-105 transition-transform duration-300">
+            <i class="fa-solid fa-bolt text-white text-lg animate-pulse"></i>
+          </div>
+          <div>
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">SolverStudio</span>
+            <span class="text-xs font-semibold px-1.5 py-0.5 ml-1.5 bg-violet-500/10 text-violet-400 border border-violet-500/30 rounded-md">v2.5 AI</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Category Navigation Links (Desktop) -->
+      <nav class="hidden md:flex items-center space-x-1 lg:space-x-2 bg-cyber-900/80 p-1.5 rounded-full border border-slate-800">
+        <button data-cat="all" class="nav-cat-btn active-cat px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-layer-group mr-1.5 text-slate-400"></i>All Modes
+        </button>
+        <button data-cat="code" class="nav-cat-btn px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-code mr-1.5 text-violet-400"></i>Code Debugger
+        </button>
+        <button data-cat="logic" class="nav-cat-btn px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-puzzle-piece mr-1.5 text-cyan-400"></i>Math & Logic
+        </button>
+        <button data-cat="business" class="nav-cat-btn px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-chart-line mr-1.5 text-emerald-400"></i>Business Strategy
+        </button>
+        <button data-cat="creative" class="nav-cat-btn px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-lightbulb mr-1.5 text-amber-400"></i>Creative Canvas
+        </button>
+      </nav>
+
+      <!-- Right Action Items -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Token Usage Counter Badge -->
+        <div class="flex items-center gap-1.5 bg-cyber-850 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs font-mono text-slate-300 shadow-inner group cursor-pointer" id="token-badge" title="Session Neural Token Capacity">
+          <i class="fa-solid fa-microchip text-violet-glow text-xs animate-spin-slow"></i>
+          <span class="text-slate-400 hidden sm:inline">Tokens:</span>
+          <span id="token-counter" class="text-emerald-glow font-bold">14,280</span>
+          <span class="text-slate-500 text-[10px]">/ 100k</span>
+        </div>
+
+        <!-- Quick Search / Command Button -->
+        <button id="cmd-palette-btn" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyber-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700/50 text-xs transition" title="Press Ctrl+K">
+          <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+          <kbd class="font-mono text-[10px] bg-slate-900 px-1.5 py-0.5 rounded text-slate-400">⌘K</kbd>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="audio-toggle-btn" class="p-2 rounded-lg bg-cyber-800 text-slate-400 hover:text-violet-400 hover:bg-slate-700 border border-slate-700/50 text-xs transition" title="Toggle Futuristic Audio Effects">
+          <i class="fa-solid fa-volume-high" id="audio-icon"></i>
+        </button>
+
+        <!-- History Drawer Button -->
+        <button id="history-drawer-toggle" class="relative p-2 rounded-lg bg-cyber-800 text-slate-300 hover:text-cyan-400 hover:bg-slate-700 border border-slate-700/50 text-xs transition" title="View Saved Solutions History">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span id="history-badge-count" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-600 text-[9px] font-bold flex items-center justify-center text-white">0</span>
+        </button>
+
+        <!-- New Session Primary Button -->
+        <button id="new-session-btn" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium text-xs shadow-glow-violet hover:scale-[1.02] active:scale-[0.98] transition-all">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span class="hidden sm:inline">New Session</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+    
+    <!-- Hero & Quick-Prompt Hub -->
+    <section id="hero" class="text-center pt-4 pb-2 space-y-6">
+      
+      <!-- High Impact Badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-950/60 border border-violet-500/30 text-violet-300 text-xs font-semibold tracking-wide backdrop-blur-md animate-fade-in shadow-glow-violet">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span>Multi-Modal Cognitive Engine Active</span>
+        <span class="text-slate-500">|</span>
+        <span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-bolt text-[10px]"></i> Sub-second Reasoning</span>
+      </div>
+
+      <!-- Main Headline & Subheadline -->
+      <div class="max-w-4xl mx-auto space-y-4">
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+          Deconstruct Any Problem <br>
+          <span class="bg-gradient-to-r from-violet-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">
+            Instantly with Deep AI Precision
+          </span>
+        </h1>
+        <p class="text-slate-400 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
+          Input cryptic stack traces, intractable mathematical constraints, high-stakes business bottlenecks, or product dilemmas. Get an interactive root-cause audit, validated action plan, and executable code scaffold.
+        </p>
+      </div>
+
+      <!-- Quick-Access Template Chips -->
+      <div class="pt-2">
+        <div class="text-xs uppercase font-mono tracking-wider text-slate-500 mb-3 flex items-center justify-center gap-2">
+          <span>Explore Verified Problem Archetypes</span>
+          <i class="fa-solid fa-arrow-turn-down text-slate-600"></i>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 max-w-5xl mx-auto" id="template-chips-container">
+          <!-- Populated by JavaScript with rich templates -->
+        </div>
+      </div>
+    </section>
+
+    <!-- The Core Solver Workspace (Interactive Split-Screen) -->
+    <section id="workspace-section" class="space-y-4">
+      
+      <!-- Section Header with Mode indicator -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-cyber-800 border border-slate-700 flex items-center justify-center text-violet-glow">
+            <i class="fa-solid fa-microscope text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              Solve Workspace
+              <span id="active-session-label" class="text-xs font-mono font-normal text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">Session #1</span>
+            </h2>
+            <p class="text-xs text-slate-400">Dual-plane neural reasoning & interactive scaffold verification</p>
+          </div>
+        </div>
+
+        <!-- Quick actions for workspace -->
+        <div class="flex items-center gap-2">
+          <button id="clear-input-btn" class="px-2.5 py-1 text-xs text-slate-400 hover:text-slate-200 bg-cyber-850 hover:bg-cyber-800 border border-slate-800 rounded transition flex items-center gap-1.5" title="Clear current inputs">
+            <i class="fa-solid fa-rotate-left text-[10px]"></i> Reset Inputs
+          </button>
+          <button id="load-sample-btn" class="px-2.5 py-1 text-xs text-violet-300 hover:text-white bg-violet-950/40 hover:bg-violet-900/50 border border-violet-800/40 rounded transition flex items-center gap-1.5" title="Insert realistic scenario">
+            <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> Load Demo
+          </button>
+        </div>
+      </div>
+
+      <!-- Split-Screen Grid Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Panel: Input Console (5 cols on lg) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-cyber-850/90 rounded-2xl border border-slate-800/90 shadow-glass backdrop-blur-xl p-5 relative overflow-hidden group">
+            
+            <!-- Panel Header -->
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono font-semibold tracking-wider uppercase text-slate-400 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-violet-glow"></i> Input Console & Parameters
+              </span>
+              <span id="char-counter" class="text-[11px] font-mono text-slate-500">0 / 4,000 chars</span>
+            </div>
+
+            <form id="solve-form" class="space-y-4" onsubmit="return false;">
+              
+              <!-- Problem Title / Subject -->
+              <div class="space-y-1.5">
+                <label for="problem-title" class="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                  <span>Problem Headline / Objective <span class="text-rose-400">*</span></span>
+                  <span class="text-[10px] text-slate-500 font-mono">Concise focus</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="problem-title" 
+                  placeholder="e.g. Asyncio Event Loop Deadlock in FastApi Worker Pool" 
+                  required
+                  class="w-full bg-cyber-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition font-sans"
+                >
+              </div>
+
+              <!-- Category & Sub-domain Selectors -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label for="category-select" class="text-xs font-semibold text-slate-300">Domain Category</label>
+                  <div class="relative">
+                    <select id="category-select" class="w-full bg-cyber-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-violet-500 transition appearance-none cursor-pointer">
+                      <option value="code" selected>💻 Code Debugger & Architecture</option>
+                      <option value="logic">🧩 Math, Logic & Algorithms</option>
+                      <option value="business">📈 Business Strategy & Ops</option>
+                      <option value="creative">🎨 Creative & Product Canvas</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label for="target-engine-select" class="text-xs font-semibold text-slate-300">Reasoning Depth</label>
+                  <div class="relative">
+                    <select id="target-engine-select" class="w-full bg-cyber-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-violet-500 transition appearance-none cursor-pointer">
+                      <option value="deep-audit" selected>⚡ Deep Multi-Phase Audit</option>
+                      <option value="rapid-fix">🚀 High-Velocity Rapid Patch</option>
+                      <option value="first-principles">🔬 First-Principles Deductive</option>
+                      <option value="stress-test">🛡️ Stress-Tested Resilient</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Difficulty / Complexity Slider -->
+              <div class="bg-cyber-900/60 rounded-xl p-3 border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-300 font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-gauge-high text-cyan-400"></i> Problem Complexity
+                  </span>
+                  <span id="difficulty-badge" class="font-mono font-bold text-xs px-2 py-0.5 rounded bg-violet-950 text-violet-300 border border-violet-800/40">Level 3: Advanced</span>
+                </div>
+                <input 
+                  type="range" 
+                  id="difficulty-slider" 
+                  min="1" 
+                  max="5" 
+                  value="3" 
+                  step="1"
+                  class="w-full accent-violet-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
+                >
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>1. Beginner</span>
+                  <span>2. Intermediate</span>
+                  <span>3. Advanced</span>
+                  <span>4. Architect</span>
+                  <span>5. Legendary</span>
+                </div>
+              </div>
+
+              <!-- Main Rich Problem Description / Code Input Area -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label for="problem-body" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <span>Problem Context, Trace & Constraints <span class="text-rose-400">*</span></span>
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="snippet-toggle-btn" class="text-[11px] text-violet-400 hover:text-violet-300 font-mono transition">
+                      <i class="fa-solid fa-code text-[10px]"></i> Wrap in Code Block
+                    </button>
+                  </div>
+                </div>
+                <div class="relative">
+                  <textarea 
+                    id="problem-body" 
+                    rows="9" 
+                    placeholder="Paste error logs, code snippet, mathematical formula, business situation, or user dilemma here...
+
+Example:
+Traceback (most recent call last):
+  File 'worker.py', line 84, in handle_event
+    future = asyncio.run_coroutine_threadsafe(coro, loop)
+RuntimeError: Event loop is closed"
+                    required
+                    class="w-full bg-cyber-900/95 border border-slate-700/80 rounded-xl p-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 font-mono focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition leading-relaxed resize-y"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Additional Constraints Tags / Flags -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-300">Solution Constraints (Select applicable)</label>
+                <div class="flex flex-wrap gap-2 text-xs" id="constraints-flags">
+                  <button type="button" class="constraint-chip active px-2.5 py-1 rounded-lg bg-cyber-900 border border-violet-500/50 text-violet-300 hover:border-violet-400 transition" data-flag="zero-downtime">
+                    <i class="fa-solid fa-check text-[10px] mr-1"></i>Zero Downtime
+                  </button>
+                  <button type="button" class="constraint-chip active px-2.5 py-1 rounded-lg bg-cyber-900 border border-violet-500/50 text-violet-300 hover:border-violet-400 transition" data-flag="high-perf">
+                    <i class="fa-solid fa-check text-[10px] mr-1"></i>O(1) / High-Throughput
+                  </button>
+                  <button type="button" class="constraint-chip px-2.5 py-1 rounded-lg bg-cyber-900 border border-slate-700 text-slate-400 hover:border-slate-500 transition" data-flag="backward-compat">
+                    <i class="fa-solid fa-plus text-[10px] mr-1"></i>Backward Compatible
+                  </button>
+                  <button type="button" class="constraint-chip px-2.5 py-1 rounded-lg bg-cyber-900 border border-slate-700 text-slate-400 hover:border-slate-500 transition" data-flag="budget-lean">
+                    <i class="fa-solid fa-plus text-[10px] mr-1"></i>Zero SaaS Add-on Cost
+                  </button>
+                </div>
+              </div>
+
+              <!-- Energetic CTA Button -->
+              <div class="pt-2">
+                <button 
+                  type="submit" 
+                  id="execute-btn" 
+                  class="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500 p-[1px] font-bold text-white shadow-glow-violet hover:shadow-glow-emerald transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  <div class="bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-600 group-hover:from-violet-500 group-hover:to-emerald-500 px-6 py-3.5 rounded-[11px] flex items-center justify-center gap-3 transition-all duration-300">
+                    <i class="fa-solid fa-atom text-base group-hover:rotate-180 transition-transform duration-700" id="btn-icon"></i>
+                    <span class="text-sm font-extrabold tracking-wide" id="btn-text">Execute Multi-Modal Analysis</span>
+                    <span class="text-xs bg-white/20 font-mono px-2 py-0.5 rounded text-white/90 hidden sm:inline">Ctrl + ↵</span>
+                  </div>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Panel: Live Resolution Engine (7 cols on lg) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-cyber-850/95 rounded-2xl border border-slate-800 shadow-glass backdrop-blur-xl overflow-hidden min-h-[640px] flex flex-col">
+            
+            <!-- Output Header & Tab Navigation Bar -->
+            <div class="bg-cyber-900/90 border-b border-slate-800 p-2 sm:p-3 flex flex-wrap items-center justify-between gap-2">
+              
+              <!-- Tab List -->
+              <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar" role="tablist">
+                <button class="res-tab active flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition" data-target="tab-root-cause">
+                  <span class="text-violet-400">🧠</span>
+                  <span class="hidden sm:inline">Root Cause</span> Analysis
+                </button>
+                <button class="res-tab flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition" data-target="tab-solution">
+                  <span class="text-emerald-400">🛠️</span>
+                  <span>Step-by-Step</span>
+                </button>
+                <button class="res-tab flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition" data-target="tab-scaffold">
+                  <span class="text-cyan-400">💻</span>
+                  <span>Scaffold</span>
+                </button>
+                <button class="res-tab flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition" data-target="tab-impact">
+                  <span class="text-amber-400">📊</span>
+                  <span class="hidden sm:inline">Impact &</span> Verify
+                </button>
+              </div>
+
+              <!-- Right Tools / Export & Fullscreen -->
+              <div class="flex items-center gap-1.5 ml-auto">
+                <button id="save-history-btn" class="p-2 rounded-lg bg-cyber-800 text-slate-300 hover:text-emerald-400 hover:bg-slate-700 border border-slate-700/50 text-xs transition" title="Save this solution to history">
+                  <i class="fa-solid fa-bookmark"></i>
+                </button>
+                <button id="export-md-btn" class="p-2 rounded-lg bg-cyber-800 text-slate-300 hover:text-violet-400 hover:bg-slate-700 border border-slate-700/50 text-xs transition" title="Export as Clean Markdown">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+                <button id="share-link-btn" class="p-2 rounded-lg bg-cyber-800 text-slate-300 hover:text-cyan-400 hover:bg-slate-700 border border-slate-700/50 text-xs transition" title="Copy shareable solution summary">
+                  <i class="fa-solid fa-share-nodes"></i>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Resolution Status Bar & Metadata Banner -->
+            <div id="solution-meta-bar" class="bg-cyber-950/60 px-4 py-2.5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
+              <div class="flex items-center gap-3">
+                <span id="solution-status-indicator" class="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Ready for Analysis
+                </span>
+                <span class="text-slate-600">|</span>
+                <span id="solution-time-taken" class="text-slate-400">Latency: <span class="text-slate-200">0.00s</span></span>
+                <span class="text-slate-600">|</span>
+                <span id="solution-confidence" class="text-slate-400">Confidence: <span class="text-violet-400 font-bold">98.4%</span></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="solution-category-tag" class="px-2 py-0.5 rounded bg-violet-950 text-violet-300 border border-violet-800/40 text-[10px]">CODE DEBUGGER</span>
+              </div>
+            </div>
+
+            <!-- Resolution Main Content Box -->
+            <div class="relative flex-1 p-5 overflow-y-auto" id="solution-display-area">
+              
+              <!-- Loader & Neural Pulse (Hidden by default) -->
+              <div id="solver-loader" class="hidden absolute inset-0 bg-cyber-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 space-y-6">
+                <!-- Neural Animated Ring -->
+                <div class="relative w-28 h-28">
+                  <div class="absolute inset-0 rounded-full border-2 border-violet-500/20 animate-ping"></div>
+                  <div class="absolute inset-2 rounded-full border-2 border-dashed border-violet-500 animate-spin-slow"></div>
+                  <div class="absolute inset-6 rounded-full border-2 border-cyan-400 animate-spin"></div>
+                  <div class="absolute inset-10 rounded-full bg-gradient-to-tr from-violet-600 to-emerald-500 flex items-center justify-center shadow-glow-violet">
+                    <i class="fa-solid fa-brain text-white text-xl animate-pulse"></i>
+                  </div>
+                </div>
+
+                <!-- Multi-Phase Text Animation -->
+                <div class="text-center space-y-2 max-w-sm">
+                  <h4 id="loader-stage-title" class="text-base font-bold text-white tracking-wide">Deconstructing Constraints...</h4>
+                  <p id="loader-stage-desc" class="text-xs text-slate-400 font-mono">Parsing semantic dependencies and identifying root bottlenecks</p>
+                </div>
+
+                <!-- Dynamic Progress Bar -->
+                <div class="w-full max-w-xs bg-slate-800 h-2 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                  <div id="loader-progress-fill" class="bg-gradient-to-r from-violet-500 via-cyan-400 to-emerald-400 h-full rounded-full w-1/12 transition-all duration-300"></div>
+                </div>
+
+                <!-- Step Pipeline Indicators -->
+                <div class="flex items-center gap-4 text-[11px] font-mono text-slate-500">
+                  <span id="pipe-step-1" class="text-violet-400 font-bold">1. Ingest</span>
+                  <span>→</span>
+                  <span id="pipe-step-2">2. Root Cause</span>
+                  <span>→</span>
+                  <span id="pipe-step-3">3. Synthesize</span>
+                  <span>→</span>
+                  <span id="pipe-step-4">4. Verify</span>
+                </div>
+              </div>
+
+              <!-- TAB 1: 🧠 Root Cause Analysis -->
+              <div id="tab-root-cause" class="tab-pane active space-y-5 animate-fade-in">
+                <!-- Injected via app.js -->
+              </div>
+
+              <!-- TAB 2: 🛠️ Step-by-Step Solution -->
+              <div id="tab-solution" class="tab-pane hidden space-y-4 animate-fade-in">
+                <!-- Injected via app.js -->
+              </div>
+
+              <!-- TAB 3: 💻 Code & Artifact Scaffold -->
+              <div id="tab-scaffold" class="tab-pane hidden space-y-4 animate-fade-in">
+                <!-- Injected via app.js -->
+              </div>
+
+              <!-- TAB 4: 📊 Impact & Verification -->
+              <div id="tab-impact" class="tab-pane hidden space-y-5 animate-fade-in">
+                <!-- Injected via app.js -->
+              </div>
+
+            </div>
+
+            <!-- Output Footer Bar with Interactive Quick Actions -->
+            <div class="bg-cyber-900/80 border-t border-slate-800/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-2 text-slate-400">
+                <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                <span>All recommendations verified against standard runtime constraints.</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="copy-active-tab-btn" class="px-3 py-1.5 rounded-lg bg-cyber-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition flex items-center gap-1.5">
+                  <i class="fa-regular fa-copy text-xs"></i> Copy View
+                </button>
+                <button id="run-simulation-btn" class="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 font-medium transition flex items-center gap-1.5 shadow-glow-emerald">
+                  <i class="fa-solid fa-play text-xs"></i> Run Interactive Simulation
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Interactive Simulation Test Bench Sandbox Modal -->
+    <div id="simulation-modal" class="fixed inset-0 bg-cyber-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-cyber-850 border border-slate-700/80 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="p-4 bg-cyber-900 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-vial-circle-check text-emerald-400"></i>
+              Interactive Test Bench & Stress Simulator
+            </h3>
+          </div>
+          <button id="close-simulation-btn" class="text-slate-400 hover:text-white p-1 rounded-lg">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+        <div class="p-5 overflow-y-auto space-y-4">
+          <p class="text-xs text-slate-400">Execute deterministic stress cases against the proposed scaffold to mathematically verify throughput, error handling, and runtime safety.</p>
+          
+          <div id="simulation-log" class="bg-cyber-950 rounded-xl p-4 font-mono text-xs text-slate-300 border border-slate-800 h-64 overflow-y-auto space-y-1">
+            <!-- Simulated console output -->
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="bg-cyber-900/80 p-3 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-slate-500 uppercase font-mono">Test Invocations</div>
+              <div id="sim-invocations" class="text-lg font-bold text-white font-mono">1,000</div>
+            </div>
+            <div class="bg-cyber-900/80 p-3 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-slate-500 uppercase font-mono">Error Rate</div>
+              <div id="sim-error-rate" class="text-lg font-bold text-emerald-400 font-mono">0.00%</div>
+            </div>
+            <div class="bg-cyber-900/80 p-3 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-slate-500 uppercase font-mono">p99 Latency</div>
+              <div id="sim-p99" class="text-lg font-bold text-cyan-400 font-mono">1.2ms</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 bg-cyber-900 border-t border-slate-800 flex justify-between items-center">
+          <span class="text-xs text-slate-400 font-mono">Status: Ready for re-run</span>
+          <button id="re-execute-sim-btn" class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i> Run Stress Test Again
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community & Trending Solutions Showcase Grid -->
+    <section id="community-section" class="space-y-6 pt-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-2">
+            <i class="fa-solid fa-fire text-amber-400"></i> Peer-Reviewed Solutions
+          </div>
+          <h2 class="text-2xl font-extrabold text-white tracking-tight">Community & Trending Problem Blueprints</h2>
+          <p class="text-slate-400 text-xs sm:text-sm">Explore high-impact deconstructions engineered and verified by top system engineers.</p>
+        </div>
+
+        <!-- Community Filter Buttons -->
+        <div class="flex items-center gap-2 bg-cyber-850 p-1 rounded-xl border border-slate-800 text-xs">
+          <button class="community-filter-btn active px-3 py-1.5 rounded-lg text-white font-medium bg-cyber-700 transition" data-filter="all">All</button>
+          <button class="community-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition" data-filter="code">Code</button>
+          <button class="community-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition" data-filter="logic">Logic</button>
+          <button class="community-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition" data-filter="business">Business</button>
+        </div>
+      </div>
+
+      <!-- Trending Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="community-cards-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- Why SolverStudio Architecture Featurettes -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+      <div class="bg-cyber-850/60 border border-slate-800/80 rounded-2xl p-6 space-y-3 relative overflow-hidden group hover:border-violet-500/50 transition">
+        <div class="w-12 h-12 rounded-xl bg-violet-950/60 border border-violet-500/30 flex items-center justify-center text-violet-400 text-xl group-hover:scale-110 transition">
+          <i class="fa-solid fa-network-wired"></i>
+        </div>
+        <h3 class="text-base font-bold text-white">Multi-Modal Dissection</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">Unlike plain chat bots, SolverStudio enforces a 4-tier structured diagnosis: Ingestion, Causal Analysis, Scaffolding, and Empirical Verification.</p>
+      </div>
+
+      <div class="bg-cyber-850/60 border border-slate-800/80 rounded-2xl p-6 space-y-3 relative overflow-hidden group hover:border-cyan-500/50 transition">
+        <div class="w-12 h-12 rounded-xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl group-hover:scale-110 transition">
+          <i class="fa-solid fa-flask-vial"></i>
+        </div>
+        <h3 class="text-base font-bold text-white">Live Synthetic Verification</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">Every generated code scaffold includes built-in stress benchmarks and test harnesses to mathematically confirm stability before production rollout.</p>
+      </div>
+
+      <div class="bg-cyber-850/60 border border-slate-800/80 rounded-2xl p-6 space-y-3 relative overflow-hidden group hover:border-emerald-500/50 transition">
+        <div class="w-12 h-12 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl group-hover:scale-110 transition">
+          <i class="fa-solid fa-box-archive"></i>
+        </div>
+        <h3 class="text-base font-bold text-white">Zero-Cloud Local Storage</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">Your proprietary bug traces and business secrets stay exclusively in your browser's private indexed local storage. Export full Markdown audits anytime.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Solver History Sidebar / Drawer -->
+  <aside id="history-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-cyber-900/98 backdrop-blur-2xl border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col">
+    
+    <!-- Drawer Header -->
+    <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-cyber-950/70">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-violet-950/70 border border-violet-500/30 flex items-center justify-center text-violet-400 text-sm">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Resolution Archive</h3>
+          <p class="text-[11px] text-slate-400 font-mono">Persisted in browser LocalStorage</p>
+        </div>
+      </div>
+      <button id="close-history-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Search & Category Filters within Drawer -->
+    <div class="p-3 bg-cyber-850/80 border-b border-slate-800 space-y-2">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input 
+          type="text" 
+          id="history-search-input" 
+          placeholder="Filter saved sessions..." 
+          class="w-full bg-cyber-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500"
+        >
+      </div>
+      <div class="flex items-center justify-between text-[11px]">
+        <span class="text-slate-400 font-mono"><span id="history-total-count">0</span> items saved</span>
+        <div class="flex items-center gap-2">
+          <button id="export-history-json" class="text-violet-400 hover:text-violet-300 font-medium">Export JSON</button>
+          <span class="text-slate-600">|</span>
+          <button id="clear-all-history-btn" class="text-rose-400 hover:text-rose-300 font-medium">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Session Items List -->
+    <div class="flex-1 overflow-y-auto p-3 space-y-2.5" id="history-list-container">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-4 bg-cyber-950 border-t border-slate-800 text-xs text-center text-slate-500 font-mono">
+      <span>Auto-saves every generated solution. Click any card to restore into workspace.</span>
+    </div>
+  </aside>
+
+  <!-- Backdrop overlay when drawer is open -->
+  <div id="drawer-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="fixed inset-0 bg-cyber-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-cyber-850 border border-slate-700/80 rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-keyboard text-violet-glow"></i> Keyboard Shortcuts
+        </h3>
+        <button id="close-shortcuts-btn" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-2 text-xs font-mono">
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/50">
+          <span class="text-slate-300">Execute Analysis</span>
+          <kbd class="bg-slate-800 px-2 py-1 rounded text-violet-300 border border-slate-700">Ctrl + Enter</kbd>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/50">
+          <span class="text-slate-300">Open Command Palette</span>
+          <kbd class="bg-slate-800 px-2 py-1 rounded text-violet-300 border border-slate-700">Ctrl + K</kbd>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/50">
+          <span class="text-slate-300">Toggle History Drawer</span>
+          <kbd class="bg-slate-800 px-2 py-1 rounded text-violet-300 border border-slate-700">Ctrl + H</kbd>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/50">
+          <span class="text-slate-300">New Blank Session</span>
+          <kbd class="bg-slate-800 px-2 py-1 rounded text-violet-300 border border-slate-700">Ctrl + N</kbd>
+        </div>
+        <div class="flex justify-between items-center py-1.5">
+          <span class="text-slate-300">Close Modals / Drawers</span>
+          <kbd class="bg-slate-800 px-2 py-1 rounded text-violet-300 border border-slate-700">ESC</kbd>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-cyber-950/80 backdrop-blur-xl mt-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        
+        <!-- Col 1: Brand & Status -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-violet-600 to-emerald-500 flex items-center justify-center">
+              <i class="fa-solid fa-bolt text-white text-xs"></i>
+            </div>
+            <span class="font-bold text-white">SolverStudio</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Autonomous multi-modal deconstruction engine for mission-critical software, mathematical constraints, and corporate decision trees.
+          </p>
+          <!-- System Status Indicator -->
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-[11px] font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>All Systems Operational (99.98%)</span>
+          </div>
+        </div>
+
+        <!-- Col 2: Archetypes -->
+        <div class="space-y-2.5">
+          <h4 class="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold">Archetypes</h4>
+          <ul class="text-xs space-y-1.5 text-slate-400">
+            <li><a href="#" class="hover:text-violet-400 transition" onclick="selectCategory('code')">Distributed Race Conditions</a></li>
+            <li><a href="#" class="hover:text-violet-400 transition" onclick="selectCategory('logic')">Dynamic Programming Optimization</a></li>
+            <li><a href="#" class="hover:text-violet-400 transition" onclick="selectCategory('business')">SaaS Retention & CAC Bottlenecks</a></li>
+            <li><a href="#" class="hover:text-violet-400 transition" onclick="selectCategory('creative')">Game Loop Narrative Mechanics</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Resources & Tools -->
+        <div class="space-y-2.5">
+          <h4 class="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold">Platform Tools</h4>
+          <ul class="text-xs space-y-1.5 text-slate-400">
+            <li><button id="open-shortcuts-footer" class="hover:text-violet-400 transition text-left">Keyboard Commands (<kbd class="text-[10px]">Ctrl+K</kbd>)</button></li>
+            <li><button id="open-sample-footer" class="hover:text-violet-400 transition text-left">Live Verification Sandbox</button></li>
+            <li><a href="#community-section" class="hover:text-violet-400 transition">Community Repository</a></li>
+            <li><a href="https://github.com" target="_blank" class="hover:text-violet-400 transition">Antigravity AI Framework</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Engine Specs -->
+        <div class="space-y-2.5">
+          <h4 class="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold">Engine Specs</h4>
+          <div class="text-xs font-mono space-y-1 text-slate-400">
+            <div>Inference: <span class="text-slate-200">Antigravity-Cognition v2</span></div>
+            <div>Context Window: <span class="text-slate-200">128,000 Tokens</span></div>
+            <div>Scaffold Engine: <span class="text-slate-200">Deterministic AST v4</span></div>
+            <div>Privacy: <span class="text-emerald-400 font-bold">100% Client-Side Memory</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="border-t border-slate-800/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <p>© 2026 SolverStudio. Engineered with precision inside Google Antigravity.</p>
+        <div class="flex items-center gap-4">
+          <span class="hover:text-slate-400 transition cursor-pointer">Security Protocol</span>
+          <span class="text-slate-700">•</span>
+          <span class="hover:text-slate-400 transition cursor-pointer">Privacy Guarantee</span>
+          <span class="text-slate-700">•</span>
+          <span class="hover:text-slate-400 transition cursor-pointer">API Documentation</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Highlight.js JS for Code Highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

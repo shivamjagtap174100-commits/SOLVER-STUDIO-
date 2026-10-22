@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>SolverStudio</ShortName>
+  <Description>Solve complex coding, math, logic, and business problems with AI</Description>
+  <Tags>ai solver debug logic business</Tags>
+  <Contact>support@solverstudio.ai</Contact>
+  <Url type="text/html" template="http://localhost:5000/?q={searchTerms}"/>
+</OpenSearchDescription>
